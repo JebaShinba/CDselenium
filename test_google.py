@@ -1,55 +1,29 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-# Set up Chrome options
-chrome_options = Options()
-chrome_options.add_argument("--headless")  # Run in headless mode
-chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
-chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-chrome_options.add_argument("--disable-gpu")  # Applicable to Windows environments
-chrome_options.add_argument("--window-size=1280x1024")  # Set a specific window size
+def send_email(subject, body):
+    sender_email = "jebashinba2001@gmail.com"
+    sender_password = "rjos mxvq elqt yugu"
+    recipient_email = "jeba@nidrive.in"
 
-# Initialize the Chrome WebDriver with these options
-driver = webdriver.Chrome(options=chrome_options)
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = recipient_email
+    msg['Subject'] = subject
 
-# Function to open a page
-def open_page(url):
-    driver.get(url)
-    print(f"Opened page: {url}")
+    msg.attach(MIMEText(body, 'plain'))
 
-# Function to perform a Google search
-def search_in_google(query):
-    search_box = driver.find_element(By.NAME, "q")
-    search_box.send_keys(query + Keys.RETURN)
-    print(f"Searching for: {query}")
-    time.sleep(2)
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient_email, msg.as_string())
+        print("Email sent successfully!")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
-# Function to extract search results
-def extract_search_results():
-    results = driver.find_elements(By.CSS_SELECTOR, 'h3')
-    for result in results:
-        title = result.text
-        link = result.find_element(By.XPATH, '..').get_attribute('href')
-        print(f"Title: {title}, Link: {link}")
-
-# Function to take a screenshot
-def take_screenshot(file_name):
-    driver.save_screenshot(file_name)
-    print(f"Screenshot saved as: {file_name}")
-
-# Function to close the browser
-def close_browser():
-    driver.quit()
-    print("Browser closed.")
-
-# Example 
 if __name__ == "__main__":
-    open_page("https://www.google.com")
-    search_in_google("Selenium WebDriver")
-    extract_search_results()
-    take_screenshot("screenshot.png")
-    close_browser()
+    subject = "Test Email"
+    body = "This is a test email from CI/CD pipeline."
+    send_email(subject, body)

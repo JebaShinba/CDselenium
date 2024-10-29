@@ -4,6 +4,8 @@ from email.mime.multipart import MIMEMultipart
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
+
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 def send_email(subject, body):
@@ -28,8 +30,19 @@ def send_email(subject, body):
         print(f"Failed to send email: {e}")
 
 def run_selenium_test():
+    
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    chrome_options.add_argument("--disable-gpu")  # Applicable to Windows environments
+    chrome_options.add_argument("--window-size=1280x1024")  # Set a specific window size
+
+# Initialize the Chrome WebDriver with these options
+    driver = webdriver.Chrome(options=chrome_options)
+
     # Set up Selenium WebDriver
-    driver = webdriver.Chrome()
+    
     
     try:
         # Example test: Open Google and check the title

@@ -1,0 +1,100 @@
+name: Branch Creation and Scheduled Notification with CI/CD
+
+on:
+  create:
+    branches:
+      - '*'  # Trigger on any new branch creation
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 09:00 UTC
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up environment variables
+        run: |
+          echo "BRANCH_NAME=${{ github.ref }}" >> $GITHUB_ENV
+          echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
+          echo "GITHUB_RUN_URL=${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
+          echo "BRANCH_TYPE=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Send Email Notification on Branch Creation
+        id: send_email_creation
+        if: startsWith(env.BRANCH_NAME, 'refs/heads/')
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "New Branch Created: ${{ env.BRANCH_NAME }}"
+          body: |
+            A new branch named '${{ env.BRANCH_NAME }}' has been created in the repository '${{ env.REPO_NAME }}'.
+            You can view the details [here](${{ env.GITHUB_RUN_URL }}).
+          to: jeba@nidrive.in
+          from: jebashinba2001@gmail.com
+
+      - name: Send Scheduled Email Notification
+        if: github.event_name == 'schedule'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Weekly Reminder: Check for New Branches"
+          body: |
+            This is a weekly reminder to check for new branches created in the repository '${{ env.REPO_NAME }}'.
+            Visit the repository [here](${{ env.GITHUB_RUN_URL }}).
+          to: jeba@nidrive.in
+          from: jebashinba2001@gmail.com
+
+      
+
+      - name: Install Dependencies and Run Tests
+        run: |
+          npm install
+          npm test
+        env:
+          NODE_ENV: test
+
+      - name: Build Application
+        run: |
+          npm run build
+
+      - name: Check Email Sending Status
+        run: |
+          if [ "${{ steps.send_email_creation.outcome }}" != "success" ]; then
+            echo "Email notification failed to send on branch creation."
+            exit 1
+          fi
+        continue-on-error: true
+
+      - name: Notify if Email Sending Failed
+        if: failure()
+        run: |
+          echo "Sending email notification failed. Please check your SMTP settings or logs for more details."
+
+  scheduled_reminder:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Send Weekly Reminder Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Weekly Reminder: Check for New Branches"
+          body: |
+            This is a weekly reminder to check for new branches created in the repository '${{ env.REPO_NAME }}'.
+            Visit the repository [here](${{ env.GITHUB_RUN_URL }}).
+          to: jeba@nidrive.in
+          from: jebashinba2001@gmail.com

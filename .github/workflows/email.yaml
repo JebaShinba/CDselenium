@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Specify your Python version
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt  # Adjust if you have dependencies
+
+      - name: Run Tests
+        id: test_run
+        run: |
+          pytest tests/  # Adjust to your test command
+        continue-on-error: true  # Continue even if tests fail
+
+      - name: Send Email Notification
+        run: |
+          if [ "${{ steps.test_run.outcome }}" == "success" ]; then
+            python test_google.py success
+          else
+            python test_google.py failure
+          fi
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}  # Store sender email in GitHub secrets
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}  # Store sender password in GitHub secrets
+          RECIPIENT_EMAIL: jeba@nidrive.in  # Store recipient email in GitHub secrets
+

@@ -61,7 +61,7 @@ def run_selenium_test():
         send_email(subject, body)
 
     finally:
-        driver.quit()  # Ensure the WebDriver is closed regardless of the test outcome
+        driver.quit()  
 
 if __name__ == "__main__":
     run_selenium_test()

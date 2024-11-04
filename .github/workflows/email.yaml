@@ -26,7 +26,7 @@ jobs:
         id: test_run
         run: |
           pytest tests/  # Adjust to your test command
-        continue-on-error: true  # Continue even if tests fail
+        continue-on-error: true  
 
       - name: Send Email Notification
         run: |

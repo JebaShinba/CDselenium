@@ -22,15 +22,19 @@ jobs:
         run: |
           pip install -r requirements.txt  # Adjust if you have dependencies
 
-      - name: Run Google Search Test
-        id: run_tests
+      - name: Run Selenium Test
+        id: selenium_test
         run: |
-          if [ -f "test_google.py" ]; then  # Check if Google.py test file exists
-            echo "Running Google Search test..."
-            python test_google.py > test_results.log || exit 0
+          if [ -f "test_google.py" ]; then
+            echo "Running Selenium test..."
+            if python test_google.py > test_results.log; then
+              echo "success" > test_status.log
+            else
+              echo "failure" > test_status.log
+            fi
             cat test_results.log
           else
-            echo "No Google Search test found; skipping this step."
+            echo "No Selenium test file found; skipping this step."
           fi
 
       - name: Send Email Notification

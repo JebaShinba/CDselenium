@@ -46,7 +46,7 @@ def run_selenium_test():
     
     try:
         # Example test: Open Google and check the title
-        driver.get("https://www.googl.com")
+        driver.get("https://www.google.com")
         assert "Google" in driver.title  # Simple assertion for testing
         
         # If the test passes

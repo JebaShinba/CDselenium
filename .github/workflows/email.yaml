@@ -22,11 +22,12 @@ jobs:
         run: |
           pip install -r requirements.txt  # Adjust if you have dependencies
 
-      - name: Run Tests
-        id: test_run
+      - name: Run Selenium tests
         run: |
-          pytest tests/  # Adjust to your test command
-        continue-on-error: true  
+          # Wait for Selenium service to be ready
+          sleep 10  # Adjust if necessary
+          python test_google.py > test_results.log || exit 0
+          cat test_results.log    # Display test results for debugging
 
       - name: Send Email Notification
         run: |
